@@ -1,0 +1,6 @@
+{
+	identifier: 'id',
+	label: 'name',
+	items: [
+	      { id: '0.ROOT', name:'ROOT', type:'level0'
+]}
