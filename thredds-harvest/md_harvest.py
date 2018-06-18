@@ -1,12 +1,17 @@
+# python3
+
 import lib.siphon_ext
 from siphon.catalog import TDSCatalog
 from siphon.catalog import Dataset
 
 import urllib.request
 import re
+import pathlib
 
 
-OUTPUT_DIR = "records/harvested"
+
+OUTPUT_DIR = "../records/harvested"
+pathlib.Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
 def fix_data_id(fname, id):
     with open(fname) as f:
