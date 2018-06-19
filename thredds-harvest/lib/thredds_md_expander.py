@@ -134,7 +134,7 @@ class THREDDSMdEditor():
         distributor_md_xml = THREDDSMdGenerator.create_aggregate_gmd_distributor_md(catalog_xml_url)
         distributor_md_el = etree.fromstring(distributor_md_xml)
 
-        doc.xpath('//gmd:MD_Distribution', namespaces=iso_namespaces)[0].append(distributor_md_el)
+        self.doc.xpath('//gmd:MD_Distribution', namespaces=iso_namespaces)[0].append(distributor_md_el)
 
 
     def replace_granule_ids(self):

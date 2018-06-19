@@ -1,15 +1,28 @@
-import lib.siphon_ext
+# import lib.siphon_ext
 
 from lib.thredds_md_expander import expand_thredds_iso_md
 
+
+
 from siphon.catalog import TDSCatalog, Dataset
+
+def follow_refs(self, *names):
+    catalog = self
+    for n in names:
+        catalog = catalog.catalog_refs[n].follow()
+    return catalog
+
+TDSCatalog.follow_refs = follow_refs
+
 
 import urllib.parse
 import urllib.request
 
+import sys
 import re
 import pathlib
 import datetime
+
 import traceback
 
 
@@ -34,16 +47,16 @@ class MDGenerator():
             '?catalog=' + \
             urllib.parse.quote_plus(cat.catalog_url) + \
             '&dataset=' + \
-            urllib.parse.quote_plus(ds.url_path)
+            urllib.parse.quote_plus(ds.id)
 
-        # print(iso_md_url)
+
         dl_file = OUTPUT_DIR + "/" + ds.name + ".iso.xml"
-        expanded_file = OUTPUT_DIR + "/" + ds.name + ".iso.expanded.xml"
+        # expanded_file = OUTPUT_DIR + "/" + ds.name + ".iso.expanded.xml"
+        
+        # print("download: " + iso_md_url + " to: " + dl_file)
         urllib.request.urlretrieve(iso_md_url, dl_file)
 
-        print("expand %s -> %s" % (dl_file, expanded_file))
-        exit(1)
-        # expand_thredds_iso_md(dl_file, expanded_file)
+        expand_thredds_iso_md(dl_file, dl_file)
 
 
     def generate_for_catalog(cat):
@@ -70,16 +83,27 @@ class Crawler(Thread):
 
     def inspect_refs(self, cat):
         for ref_name in cat.catalog_refs.keys():
-            if re.search(TODAY_RE, ref_name):
-                # we found todays catalog. use that to generate a single aggregate metadata for all sibling catalogs
-                MDGenerator.generate_for_catalog(cat)
-                return
-            elif re.search(SAME_YEAR_RE, ref_name):
-                # previous days catalog
-                next
-            else:
-                child_cat = cat.catalog_refs[ref_name].follow()
-                self._queue.put(child_cat, True)
+            try:
+                if re.search(TODAY_RE, ref_name):
+                    # we found todays catalog. use that to generate a single aggregate metadata for all sibling catalogs
+                    MDGenerator.generate_for_catalog(cat)
+                    return
+                elif re.search(SAME_YEAR_RE, ref_name):
+                    # previous days catalog
+                    next
+                else:
+                    child_cat = cat.catalog_refs[ref_name].follow()
+                    self._queue.put(child_cat, True)
+            except Exception as e:
+                print("error processing catalog_url: %s with ref %s" % (cat.catalog_url, ref_name))
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                tbe = traceback.TracebackException(
+                    exc_type, exc_value, exc_tb,
+                )
+                print(''.join(tbe.format()))
+
+                print('\nexception only:')
+                print(''.join(tbe.format_exception_only()))
 
     
     def run(self):
@@ -90,17 +114,13 @@ class Crawler(Thread):
                 self.inspect_refs(cat)
             except Empty:
                 return
-            except Exception as e:
-                print("REF ERROR %s " % (cat.catalog_url))
-                print(e)
-                # traceback.print_exc()
+
             self._queue.task_done()
 
 
-print("hi")
 
-expand_thredds_iso_md('../records/generated/Level3_YUX_PTA_20180618_2058.nids.iso.xml', '../records/generated/Level3_YUX_PTA_20180618_2058.nids.iso.expanded.xml')
-exit(1)
+# expand_thredds_iso_md('../records/generated/Level3_YUX_PTA_20180618_2058.nids.iso.xml', '../records/generated/Level3_YUX_PTA_20180618_2058.nids.iso.expanded.xml')
+# exit(1)
 
 
 cat = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs('Radar Data')
@@ -113,5 +133,3 @@ for _ in range(NUM_THREADS):
     workers.append(worker)
 
 queue.join()
-
-print("bye johny")

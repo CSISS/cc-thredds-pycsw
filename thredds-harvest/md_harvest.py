@@ -33,7 +33,7 @@ def download_iso(ds):
         print(url + " -> " + file)
         # print("results/" + ds.name + ".iso")
         urllib.request.urlretrieve(url, file)
-        fix_data_id(file, ds.name)
+        fix_data_id(file, ds.name) 
 
     except Exception as e:
         print(e)
