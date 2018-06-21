@@ -35,7 +35,7 @@ OUTPUT_DIR = '../records/harvested'
 
 
 
-NUM_THREADS = 10
+NUM_THREADS = 40
 lock = Lock()
 queue = Queue(maxsize=0)
 
@@ -104,19 +104,19 @@ class Crawler(Thread):
 
 
 
-# expand_thredds_iso_md('../records/generated/Level3_YUX_PTA_20180618_2058.nids.iso.xml', '../records/generated/Level3_YUX_PTA_20180618_2058.nids.iso.expanded.xml')
-# exit(1)
+
+def harvest_catalog(ref_name):
+    cat = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs(ref_name)
+
+    queue.put(cat)
+    workers = []
+    for _ in range(NUM_THREADS):
+        worker = Crawler(queue)
+        worker.start()
+        workers.append(worker)
+
+    queue.join()
 
 
-cat = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs('Satellite Data', 'Infrared (11 um)', 'WEST-CONUS_4km')
-
-queue.put(cat)
-workers = []
-for _ in range(NUM_THREADS):
-    worker = Crawler(queue)
-    worker.start()
-    workers.append(worker)
-
-queue.join()
-
-
+for ref_name in ['Forecast Model Data', 'Forecast Products and Analyses', 'Observation Data', 'Satellite Data', 'Unidata case studies']:
+    harvest_catalog(ref_name)
