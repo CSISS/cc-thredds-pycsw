@@ -15,6 +15,7 @@ import unicodedata
 import re
 import pathlib
 import datetime
+import os.path
 
 import traceback
 
@@ -47,8 +48,9 @@ def process_dataset(cat, ds):
         url = cat.iso_md_url(ds)
         file = OUTPUT_DIR + "/" + THREDDSMdEditor.slugify(ds.name) + ".iso.xml"
         print("download", ds.id, url, file)
-        urllib.request.urlretrieve(url, file)
-        THREDDSMdEditor.fix_data_id(file, ds.id)
+        if(not os.path.isfile(file)):
+            urllib.request.urlretrieve(url, file)
+            THREDDSMdEditor.fix_data_id(file, ds.id)
     except Exception as e:
         print(e)
         traceback.print_tb(e.__traceback__)

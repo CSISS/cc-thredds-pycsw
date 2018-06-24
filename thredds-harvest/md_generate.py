@@ -47,8 +47,8 @@ class MDGenerator():
             url = cat.iso_md_url(ds)
             file = OUTPUT_DIR + "/" + THREDDSMdEditor.slugify(ds.name) + ".iso.xml"
             print("download", ds.id, url, file)
-
-            urllib.request.urlretrieve(url, file)
+            if(not os.path.isfile(file)):
+                urllib.request.urlretrieve(url, file)
             THREDDSMdEditor.expand_thredds_iso_md(file, file)
         except Exception as e:
             print(e)
