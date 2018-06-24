@@ -40,3 +40,12 @@ Run:
 mkdir -p /opt/cc-thredds-pycsw/tmp
 export TMPDIR=/opt/cc-thredds-pycsw/tmp
 ```
+
+
+## Using the system
+
+Add `md_sync_daily.sh` to cron to run once a day.
+
+PyCSW will be available on port 8095
+
+

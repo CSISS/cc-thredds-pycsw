@@ -63,7 +63,8 @@ def process_catalog_ref(cat_ref):
             # ignore all catalogs that have a day in their path, but that day is not yesterday
             if(re.search(THIS_YEAR_RE, ref.href) and not re.search(YESTERDAY_RE, ref.href)):
                 next
-            catalog_refs_queue.put(ref)
+            else:
+                catalog_refs_queue.put(ref)
             # print("queue put! size =", catalog_refs_queue.qsize())
         for ds in cat.datasets.values():
             process_dataset(cat, ds)
