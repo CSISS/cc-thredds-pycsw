@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # delete all generated
 rm -rf /opt/cc-thredds-pycsw/records/generated/*
