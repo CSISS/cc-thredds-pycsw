@@ -13,18 +13,19 @@ services:
       - db-data:/var/lib/postgresql/data/pgdata
 
   pycsw:
-    image: geopython/pycsw:2.2.0
+    image: juozasg/pycsw-py2
     container_name: pycsw
     ports:
-      - "8001:8000"
+      - "8095:8000"
     volumes:
       - ./pycsw.cfg:/etc/pycsw/pycsw.cfg
       - ../records:/records
     entrypoint:
-      - "python3"
+      - "python"
       - "/usr/local/bin/entrypoint.py"
       - "--workers"
-      - "6"
+      - "1"
+      - "--reload"
 
 
 
