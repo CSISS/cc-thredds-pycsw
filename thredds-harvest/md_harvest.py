@@ -26,6 +26,12 @@ from queue import Queue, Empty
 
 OUTPUT_DIR = '../records/harvested'
 
+yesterday = datetime.date.today() - datetime.timedelta(days=1)
+YESTERDAY_RE = r"%d.*%d.*%d" % (yesterday.year, yesterday.month, yesterday.day)
+THIS_YEAR_RE = r"%d.*\d\d.*\d\d" % (yesterday.year)
+
+
+
 NUM_THREADS = 50
 WORKER_TIMEOUT = 30 # wait n seconds for more work and then stop
 catalog_refs_queue = Queue(maxsize=0)
@@ -33,10 +39,14 @@ catalog_refs_queue = Queue(maxsize=0)
 
 
 def process_dataset(cat, ds):
+    # ignore all datasets that have an day in their ID, but that day is not yesterday
+    if(re.search(THIS_YEAR_RE, ds.id) and not re.search(YESTERDAY_RE, ds.id)):
+        return
+
     try:
         url = cat.iso_md_url(ds)
         file = OUTPUT_DIR + "/" + THREDDSMdEditor.slugify(ds.name) + ".iso.xml"
-        print("dataset download", ds.id, url, file)
+        # print("dataset download", ds.id, url, file)
         urllib.request.urlretrieve(url, file)
         THREDDSMdEditor.fix_data_id(file, ds.id)
     except Exception as e:
@@ -50,6 +60,9 @@ def process_catalog_ref(cat_ref):
         # print("cat_ref follow", cat_ref.href)
         cat = cat_ref.follow()
         for ref in cat.catalog_refs.values():
+            # ignore all catalogs that have a day in their path, but that day is not yesterday
+            if(re.search(THIS_YEAR_RE, ref.href) and not re.search(YESTERDAY_RE, ref.href)):
+                next
             catalog_refs_queue.put(ref)
             # print("queue put! size =", catalog_refs_queue.qsize())
         for ds in cat.datasets.values():
