@@ -1,24 +1,16 @@
-# import lib.siphon_ext
-
-from lib.thredds_md_expander import expand_thredds_iso_md
-
+import sys
+assert sys.version_info >= (3,6)
 
 
 from siphon.catalog import TDSCatalog, Dataset
 
-def follow_refs(self, *names):
-    catalog = self
-    for n in names:
-        catalog = catalog.catalog_refs[n].follow()
-    return catalog
-
-TDSCatalog.follow_refs = follow_refs
+from lib.thredds_md_editor import THREDDSMdEditor
+import lib.siphon_ext
 
 
 import urllib.parse
 import urllib.request
 
-import sys
 import re
 import pathlib
 import datetime
@@ -36,31 +28,35 @@ TODAY_RE = r"%d.*%d.*%d" % (today.year, today.month, today.day)
 SAME_YEAR_RE = r"%d.*\d\d.*\d\d" % (today.year)
 
 
-NUM_THREADS = 10
-lock = Lock()
-queue = Queue(maxsize=0)
+
+OUTPUT_DIR = '../records/generated'
+
+NUM_THREADS = 1
+WORKER_TIMEOUT = 30 # wait n seconds for more work and then stop
+catalog_refs_queue = Queue(maxsize=0)
+
+
 
 
 class MDGenerator():
     def generate_for_catalog_dataset(cat, ds):
-        iso_md_url = ds.access_urls['ISO'] + \
-            '?catalog=' + \
-            urllib.parse.quote_plus(cat.catalog_url) + \
-            '&dataset=' + \
-            urllib.parse.quote_plus(ds.id)
+        try:
+            url = cat.iso_md_url(ds)
+            file = OUTPUT_DIR + "/" + THREDDSMdEditor.slugify(ds.name) + ".iso.xml"
+            print("collection sample dataset download", ds.id, url, file)
 
-
-        dl_file = OUTPUT_DIR + "/" + ds.name + ".iso.xml"
-        # expanded_file = OUTPUT_DIR + "/" + ds.name + ".iso.expanded.xml"
-        
-        # print("download: " + iso_md_url + " to: " + dl_file)
-        urllib.request.urlretrieve(iso_md_url, dl_file)
-
-        expand_thredds_iso_md(dl_file, dl_file)
+            urllib.request.urlretrieve(url, file)
+            THREDDSMdEditor.expand_thredds_iso_md(file, file)
+        except Exception as e:
+            print(e)
+            traceback.print_tb(e.__traceback__)
+            print("[ERROR] generate_for_catalog_dataset. catalog_url=%s, ds.id=%s, url=%s, file=%s" % (cat.catalog_url, ds.id, url, file))
 
 
     def generate_for_catalog(cat):
         for ref_name in cat.catalog_refs.keys():
+            # find a sub-catalog that is for today or within same year
+            # inside that sub-catalog pick a dataset that represents a typical MD granule
             if(re.search(TODAY_RE, ref_name) or re.search(SAME_YEAR_RE, ref_name)):
                 child_cat = cat.catalog_refs[ref_name].follow()
                 # dont use the first dataset in the catalog, because it's often the one named 'latest'
@@ -72,64 +68,51 @@ class MDGenerator():
 
 
 
-class Crawler(Thread): 
-    def __init__(self, queue): 
-        Thread.__init__(self)
-        self._queue = queue 
+def process_catalog_ref(cat_ref):
+    print("follow", cat_ref.href)
+    cat = cat_ref.follow()
+    for ref_name in cat.catalog_refs.keys():
+        try:
+            if re.search(TODAY_RE, ref_name):
+                # we found todays catalog
+                # use that to generate a single aggregate metadata for all sibling catalogs
+                MDGenerator.generate_for_catalog(cat)
+                return
+            elif re.search(SAME_YEAR_RE, ref_name):
+                # previous days catalog
+                next
+            else:
+                child_cat_ref = cat.catalog_refs[ref_name]
+                catalog_refs_queue.put(child_cat_ref)
+        except Exception as e:
+            print("[ERROR] process_catalog_ref", cat_ref.href)
+            print(e)
+            traceback.print_tb(e.__traceback__)
 
-    def generate_aggregate_md_for_catalog(self, cat):
-        print(cat.catalog_url)
-
-
-    def inspect_refs(self, cat):
-        for ref_name in cat.catalog_refs.keys():
-            try:
-                if re.search(TODAY_RE, ref_name):
-                    # we found todays catalog. use that to generate a single aggregate metadata for all sibling catalogs
-                    MDGenerator.generate_for_catalog(cat)
-                    return
-                elif re.search(SAME_YEAR_RE, ref_name):
-                    # previous days catalog
-                    next
-                else:
-                    child_cat = cat.catalog_refs[ref_name].follow()
-                    self._queue.put(child_cat, True)
-            except Exception as e:
-                print("error processing catalog_url: %s with ref %s" % (cat.catalog_url, ref_name))
-                exc_type, exc_value, exc_tb = sys.exc_info()
-                tbe = traceback.TracebackException(
-                    exc_type, exc_value, exc_tb,
-                )
-                print(''.join(tbe.format()))
-
-                print('\nexception only:')
-                print(''.join(tbe.format_exception_only()))
 
     
-    def run(self):
-        while True:
-            try:
-                # print(self._queue.qsize())
-                cat = self._queue.get(timeout=2) 
-                self.inspect_refs(cat)
-            except Empty:
-                return
-
-            self._queue.task_done()
-
-
-
-# expand_thredds_iso_md('../records/generated/Level3_YUX_PTA_20180618_2058.nids.iso.xml', '../records/generated/Level3_YUX_PTA_20180618_2058.nids.iso.expanded.xml')
-# exit(1)
+def worker_loop():
+    print('Worker started')
+    while True:
+        try:
+            # print("...queue get. size =", catalog_refs_queue.qsize())
+            cat_ref = catalog_refs_queue.get(timeout=WORKER_TIMEOUT)
+            process_catalog_ref(cat_ref)
+            catalog_refs_queue.task_done()
+        except Empty:
+            print('Worker timed out waiting for queue')
+            return
 
 
-cat = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs('Radar Data')
 
-queue.put(cat)
-workers = []
+# cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').catalog_refs['Radar Data']
+cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs('Radar Data', 'NEXRAD Level III Radar', 'PTA').catalog_refs['YUX']
+
+catalog_refs_queue.put(cat_ref)
+threads = []
 for _ in range(NUM_THREADS):
-    worker = Crawler(queue)
-    worker.start()
-    workers.append(worker)
+    t = Thread(target=worker_loop)
+    threads.append(t)
+    t.start()
 
-queue.join()
+catalog_refs_queue.join()

@@ -138,7 +138,7 @@ class THREDDSMdEditor():
 
 
     def replace_granule_ids(self):
-        '''"NEXRAD/ABC/XYZ/20180615/Level3_VWX_OHA_20180615_1643.nids" -> "NEXRAD/ABC/XYX/__CYBERCONNECTOR_MULTIDATASET_AGGREGATE__"'''
+        '''"NEXRAD/ABC/XYZ/20180615/Level3_VWX_OHA_20180615_1643.nids" -> "NEXRAD/ABC/XYX/__CYBERCONNECTOR_COLLECTION_AGGREGATE__"'''
 
         xpaths = [
             '//gmd:fileIdentifier/gco:CharacterString',
@@ -148,20 +148,43 @@ class THREDDSMdEditor():
 
         for xpath in xpaths:
             for el in self.doc.xpath(xpath, namespaces=iso_namespaces):
-                el.text = re.sub(r"\d{8}/[^/]*$", '__CYBERCONNECTOR_MULTIDATASET_AGGREGATE__', el.text)
+                el.text = re.sub(r"\d{8}/[^/]*$", '__CYBERCONNECTOR_COLLECTION_AGGREGATE__', el.text)
 
 
-def expand_thredds_iso_md(inpath, outpath):
-    with open(inpath) as f:
-        doc = etree.parse(f)
+    def expand_thredds_iso_md(inpath, outpath):
+        with open(inpath) as f:
+            doc = etree.parse(f)
 
-    md_editor = THREDDSMdEditor(doc)
+        md_editor = THREDDSMdEditor(doc)
 
-    md_editor.replace_time_extent()
-    md_editor.add_live_thredds_link()
-    md_editor.replace_granule_ids()
+        md_editor.replace_time_extent()
+        md_editor.add_live_thredds_link()
+        md_editor.replace_granule_ids()
 
-    with open(outpath, 'w+') as f:
-        f.write(etree.tostring(doc, pretty_print=True).decode('utf-8'))
+        with open(outpath, 'w+') as f:
+            f.write(etree.tostring(doc, pretty_print=True).decode('utf-8'))
 
+
+    def fix_data_id(fname, id):
+        with open(fname) as f:
+            text = f.read()
+
+        text = re.sub(r"<gmd:fileIdentifier>[^\$]+?</gmd:fileIdentifier>",
+            "<gmd:fileIdentifier><gco:CharacterString>%s</gco:CharacterString></gmd:fileIdentifier>" % id,
+            text,
+            re.MULTILINE)
+
+        with open(fname, "w") as f:
+            f.write(text)
+
+
+    def slugify(value):
+        """
+        Normalizes string, converts to lowercase, removes non-alpha characters,
+        and converts spaces to hyphens.
+        """
+        # value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+        value = re.sub('[^\w\s-]', '', value).strip().lower()
+        value = re.sub('[-\s]+', '-', value)
+        return value
 
