@@ -28,10 +28,13 @@ TODAY_RE = r"%d.*%d.*%d" % (today.year, today.month, today.day)
 THIS_YEAR_RE = r"%d.*\d\d.*\d\d" % (today.year)
 
 
+yesterday = datetime.date.today() - datetime.timedelta(days=1)
+YESTERDAY_RE = r"%d.*%d.*%d" % (yesterday.year, yesterday.month, yesterday.day)
+THIS_YEAR_RE = r"%d.*\d\d.*\d\d" % (yesterday.year)
 
 OUTPUT_DIR = '../records/generated'
 
-NUM_THREADS = 40
+NUM_THREADS = 50
 WORKER_TIMEOUT = 30 # wait n seconds for more work and then stop
 catalog_refs_queue = Queue(maxsize=0)
 
@@ -43,7 +46,7 @@ class MDGenerator():
         try:
             url = cat.iso_md_url(ds)
             file = OUTPUT_DIR + "/" + THREDDSMdEditor.slugify(ds.name) + ".iso.xml"
-            print("collection sample dataset download", ds.id, url, file)
+            print("download", ds.id, url, file)
 
             urllib.request.urlretrieve(url, file)
             THREDDSMdEditor.expand_thredds_iso_md(file, file)
@@ -54,43 +57,31 @@ class MDGenerator():
 
 
     def generate_for_catalog(cat):
-        for ref_name in cat.catalog_refs.keys():
-            # find a sub-catalog that is for today or within same year
-            # inside that sub-catalog pick a dataset that represents a typical MD granule
-            if(re.search(TODAY_RE, ref_name) or re.search(THIS_YEAR_RE, ref_name)):
-                child_cat = cat.catalog_refs[ref_name].follow()
-                # dont use the first dataset in the catalog, because it's often the one named 'latest'
-                # which is different from all other datasets
-                if len(child_cat.datasets) > 1:
-                    ds = child_cat.datasets[1]
-                    MDGenerator.generate_for_catalog_dataset(child_cat, ds)
-                    return
-
-def process_catalog(cat):
-    for ref_name in cat.catalog_refs.keys():
-        try:
-            if re.search(TODAY_RE, ref_name):
-                # we found todays catalog
-                # use that to generate a single aggregate metadata for all sibling catalogs
-                MDGenerator.generate_for_catalog(cat)
-                return
-            elif re.search(THIS_YEAR_RE, ref_name):
-                # previous days catalog
-                next
-            else:
-                child_cat_ref = cat.catalog_refs[ref_name]
-                catalog_refs_queue.put(child_cat_ref)
-        except Exception as e:
-            print("[ERROR] process_catalog_refs", cat_ref.href)
-            print(e)
-            traceback.print_tb(e.__traceback__)
+        if len(cat.datasets) > 1:
+            ds = cat.datasets[1]
+            MDGenerator.generate_for_catalog_dataset(cat, ds)
 
 
 def process_catalog_ref(cat_ref):
     try:
-        print("follow", cat_ref.href)
-        cat = cat_ref.follow()
-        process_catalog(cat)
+        if(re.search(YESTERDAY_RE, cat_ref.href)):
+            # found yesterdays catalog
+            print("follow", cat_ref.href)
+            cat = cat_ref.follow()
+            MDGenerator.generate_for_catalog(cat)
+        elif(re.search(THIS_YEAR_RE, cat_ref.href)):
+            # found a daily catalog that is not yesterdays
+            print("skip", cat_ref.href)
+        else:
+            # found a catalog without a date
+            print("follow", cat_ref.href)
+            cat = cat_ref.follow()
+
+            # process all children
+            for child_cat_ref in cat.catalog_refs.values():
+                # print("enqueue", child_cat_ref.href)
+                catalog_refs_queue.put(child_cat_ref)
+
     except Exception as e:
         print("[ERROR] process_catalog_ref", cat_ref.href)
         print(e)
@@ -113,6 +104,7 @@ def worker_loop():
 
 cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').catalog_refs['Radar Data']
 # cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs('Radar Data', 'NEXRAD Level III Radar', 'PTA').catalog_refs['YUX']
+# cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs('Radar Data', 'NEXRAD Level III Radar').catalog_refs['PTA']
 
 catalog_refs_queue.put(cat_ref)
 threads = []

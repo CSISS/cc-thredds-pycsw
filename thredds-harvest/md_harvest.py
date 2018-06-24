@@ -46,7 +46,7 @@ def process_dataset(cat, ds):
     try:
         url = cat.iso_md_url(ds)
         file = OUTPUT_DIR + "/" + THREDDSMdEditor.slugify(ds.name) + ".iso.xml"
-        # print("dataset download", ds.id, url, file)
+        print("download", ds.id, url, file)
         urllib.request.urlretrieve(url, file)
         THREDDSMdEditor.fix_data_id(file, ds.id)
     except Exception as e:
@@ -56,15 +56,16 @@ def process_dataset(cat, ds):
 
 
 def process_catalog_ref(cat_ref):
+    # ignore all catalogs that have a day in their path, but that day is not yesterday
+    if(re.search(THIS_YEAR_RE, cat_ref.href) and not re.search(YESTERDAY_RE, cat_ref.href)):
+        print("skip", cat_ref.href)
+        return
     try:
-        # print("cat_ref follow", cat_ref.href)
+        print("follow", cat_ref.href)
         cat = cat_ref.follow()
         for ref in cat.catalog_refs.values():
-            # ignore all catalogs that have a day in their path, but that day is not yesterday
-            if(re.search(THIS_YEAR_RE, ref.href) and not re.search(YESTERDAY_RE, ref.href)):
-                next
-            else:
-                catalog_refs_queue.put(ref)
+            # print("enqueue", ref.href)
+            catalog_refs_queue.put(ref)
             # print("queue put! size =", catalog_refs_queue.qsize())
         for ds in cat.datasets.values():
             process_dataset(cat, ds)
