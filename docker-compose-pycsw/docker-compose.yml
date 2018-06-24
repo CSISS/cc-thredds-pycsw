@@ -24,8 +24,7 @@ services:
       - "python"
       - "/usr/local/bin/entrypoint.py"
       - "--workers"
-      - "1"
-      - "--reload"
+      - "6"
 
 
 
