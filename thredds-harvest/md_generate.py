@@ -105,8 +105,8 @@ def worker_loop():
 
 
 
-# cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').catalog_refs['Radar Data']
-cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs('Radar Data', 'NEXRAD Level III Radar', 'PTA').catalog_refs['YUX']
+cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').catalog_refs['Radar Data']
+# cat_ref = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml').follow_refs('Radar Data', 'NEXRAD Level III Radar', 'PTA').catalog_refs['YUX']
 
 catalog_refs_queue.put(cat_ref)
 threads = []
