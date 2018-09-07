@@ -1,0 +1,10 @@
+INFO  [main] controller.ServiceController.[] Jun/01 14:05:52 - Running createWafTds in service controller: http://www.ngdc.noaa.gov/thredds/catalog.xml
+ERROR [main] impl.CatalogCrawlerImpl.[] Jun/01 14:05:52 - http://www.ngdc.noaa.gov/thredds/catalog.xml
+INFO  [main] controller.ServiceController.[] Jun/01 14:05:52 - Running createWaf in service controller...
+INFO  [main] controller.ServiceController.[] Jun/01 14:06:59 - Running createTree in service controller...
+INFO  [main] controller.ServiceController.[] Jun/01 14:06:59 - Launch start time: 1 Jun 2018 02:06
+INFO  [main] service.DatasetTreeService.[] Jun/01 14:06:59 - rootNode=thredds
+ERROR [main] impl.CatalogCrawlerImpl.[] Jun/01 14:06:59 - http://www.ngdc.noaa.gov/thredds/catalog.xml
+INFO  [main] controller.ServiceController.[] Jun/01 14:11:52 - Running createTree in service controller...
+INFO  [main] controller.ServiceController.[] Jun/01 14:11:52 - Launch start time: 1 Jun 2018 02:11
+INFO  [main] service.DatasetTreeService.[] Jun/01 14:11:52 - rootNode=thredds
