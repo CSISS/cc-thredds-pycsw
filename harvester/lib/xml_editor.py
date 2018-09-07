@@ -12,7 +12,6 @@ class XMLEditor():
         parser = ETree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
 
         self.etree = ETree.fromstring(xml, parser=parser)
-        print(type(self.etree))
 
     def fromfile(file):
         with open(file, 'r') as f:
@@ -24,7 +23,6 @@ class XMLEditor():
     def tofile(self, file):
         with open(file, 'w') as f:
             f.write(ETree.tostring(self.etree).decode('utf-8'))
-        print("wrote %s" % file)
 
     def get_xpath_text(self, xpath):
         return(self.etree.xpath(xpath, namespaces=XMLEditor.iso_namespaces)[0].text)

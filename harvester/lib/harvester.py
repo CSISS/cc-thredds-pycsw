@@ -4,7 +4,7 @@ import traceback
 
 
 class Harvester():
-    def __init__(scraper, num_workers=20, queue_timeout=10):
+    def __init__(self, scraper, num_workers=20, queue_timeout=10):
         self.scraper = scraper
         self.num_workers = num_workers
         self.queue_timeout = queue_timeout

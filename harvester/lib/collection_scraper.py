@@ -8,25 +8,25 @@ from . import siphon_ext
 
 from .util import slugify, http_getfile
 
+from queue import Queue
 
 
 class CollectionScraper():
-    def __init__(self, queue, outputdir='../records/scraped'):
-        self.queue = queue
-        self.outputdir = outputdir
-        self.collection_generator = CollectionGenerator()
+    def __init__(self):
+        self.queue = Queue(maxsize=0)
+        self.download_dir = '../records/scraped'
+        self.collection_generator = CollectionGenerator(output_dir='../records/collections')
 
     def dataset_download_url(self, dataset_catalog, dataset):
         return(dataset_catalog.iso_md_url(dataset))
 
     def dataset_download_file(self, dataset):
-        collection_name = re.sub(timestamp_re.date_time, '', dataset.name)
-        file = self.outputdir + "/" + slugify(collection_name) + ".iso.xml"
+        # collection_name = re.sub(timestamp_re.date_time, '', dataset.name)
+        file = self.download_dir + "/" + slugify(dataset.name) + ".iso.xml"
         return(file)
 
 
     def harvest_collection_catalog_metadata(self, collection_catalog, leaf_ref):
-        # print("MATCH     %s.%s" % (collection_catalog.ref_name, leaf_ref.title))
         leaf_catalog = leaf_ref.follow()
 
         for ds_name, ds in leaf_catalog.datasets.items():
@@ -34,12 +34,10 @@ class CollectionScraper():
                 url = self.dataset_download_url(leaf_catalog, ds)
                 file = self.dataset_download_file(ds)
 
-                print("%s -> %s" % (collection_catalog.ref_name, url))
                 http_getfile(url, file)
 
                 self.collection_generator.generate_collection_iso_for_dataset(collection_catalog, ds, url, file)
-                # print("quitting")
-                # exit(0)
+
                 return
 
 

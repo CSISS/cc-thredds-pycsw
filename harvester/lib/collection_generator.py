@@ -10,11 +10,11 @@ from .timestamp_util import timestamp_re
 
 
 class CollectionGenerator():
-    def __init__(self):
+    def __init__(self, output_dir='../records/collections'):
         iso_template_path = os.path.join(os.path.dirname(__file__), "../templates/unidata-thredds-collection.xml.template")
         template_string = open(iso_template_path, "r").read()
         self.template = string.Template(template_string)
-        self.outputdir = '../records/collections'
+        self.output_dir = output_dir
         print("Using template '%s' to generate ISO metadata" % iso_template_path)
 
 
@@ -57,7 +57,6 @@ class CollectionGenerator():
             collection_xml.append_element_to_xpath(dest_xpath, e)
 
     def generate_collection_iso_for_dataset(self, collection_catalog, dataset, url, ds_file):
-        print("generating collection ISO for " + dataset.name)
 
         dataset_xml_doc = XMLEditor.fromfile(ds_file)
 
@@ -68,7 +67,8 @@ class CollectionGenerator():
 
         self.copy_elements_to_collection_xml(collection_xml_doc, dataset_xml_doc)
 
-        collection_file = self.outputdir + '/' + template_keywords['title'] + '.xml'
+        collection_file = self.output_dir + '/' + template_keywords['title'] + '.xml'
 
         collection_xml_doc.tofile(collection_file)
+        print("generated %s" % collection_file)
         exit(1)
