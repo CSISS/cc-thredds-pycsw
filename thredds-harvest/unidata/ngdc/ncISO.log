@@ -1,3 +1,0 @@
-INFO  [main] controller.ServiceController.[] Jun/01 12:21:27 - Running createWafTds in service controller: http://www.ngdc.noaa.gov/thredds/catalog.xml
-ERROR [main] impl.CatalogCrawlerImpl.[] Jun/01 12:21:28 - http://www.ngdc.noaa.gov/thredds/catalog.xml
-INFO  [main] controller.ServiceController.[] Jun/01 12:21:28 - Running createWaf in service controller...

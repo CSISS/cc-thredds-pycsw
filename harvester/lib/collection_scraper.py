@@ -1,6 +1,6 @@
 import re
 
-from siphon.catalog import TDSCatalog, Dataset
+from .siphon.catalog import TDSCatalog, Dataset
 
 from .timestamp_util import timestamp_re
 from .collection_generator import CollectionGenerator

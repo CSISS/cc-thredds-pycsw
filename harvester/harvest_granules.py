@@ -2,15 +2,15 @@ import sys
 assert sys.version_info >= (3,6)
 
 
-from lib.harvester import Harvester
+from lib.threaded_harvester import ThreadedHarvester
 from lib.granule_scraper import GranuleScraper
 
-from siphon.catalog import TDSCatalog, Dataset
+from lib.siphon.catalog import TDSCatalog, Dataset
 
 
 scraper = GranuleScraper()
 
-harvester = Harvester(scraper, 1, 10)
+harvester = ThreadedHarvester(scraper, 40, 10)
 
 top_cat = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml')
 
@@ -29,4 +29,5 @@ refs['nexrad3-pta-yux'] = top_cat.catalog_refs['Radar Data'].follow() \
             .catalog_refs['YUX']
 
 
+# harvester.harvest([refs['nexrad3-pta-yux']])
 harvester.harvest(refs.values())

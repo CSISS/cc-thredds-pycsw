@@ -1,4 +1,4 @@
-from siphon.catalog import TDSCatalog, Dataset
+from .siphon.catalog import TDSCatalog, Dataset
 import urllib.parse
 
 

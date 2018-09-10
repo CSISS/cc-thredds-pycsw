@@ -71,4 +71,3 @@ class CollectionGenerator():
 
         collection_xml_doc.tofile(collection_file)
         print("generated %s" % collection_file)
-        exit(1)

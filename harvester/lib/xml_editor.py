@@ -24,19 +24,27 @@ class XMLEditor():
         with open(file, 'w') as f:
             f.write(ETree.tostring(self.etree).decode('utf-8'))
 
+    def safe_xpath_element(self, xpath):
+        try:
+            return(self.etree.xpath(xpath, namespaces=XMLEditor.iso_namespaces)[0])
+        except:
+            print("xpath matches nothing: %s" % xpath)
+            return(ETree.Element('empty'))
+
+
     def get_xpath_text(self, xpath):
-        return(self.etree.xpath(xpath, namespaces=XMLEditor.iso_namespaces)[0].text)
+        return(self.safe_xpath_element(xpath).text)
 
     def get_xpath_element(self, xpath):
-        return(self.etree.xpath(xpath, namespaces=XMLEditor.iso_namespaces)[0])
+        return(self.safe_xpath_element(xpath))
 
     def append_element_to_xpath(self, xpath, element):
-        self.etree.xpath(xpath, namespaces=XMLEditor.iso_namespaces)[0].append(element)
+        self.safe_xpath_element(xpath).append(element)
 
     def update_xpath_fromstring(self, xpath, xml_string):
         element = ETree.fromstring(xml_string)
 
-        self.etree.xpath(xpath, namespaces=XMLEditor.iso_namespaces)[0].append(element)
+        self.safe_xpath_element(xpath).append(element)
 
 
 
