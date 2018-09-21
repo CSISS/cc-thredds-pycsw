@@ -287,6 +287,25 @@ class TDSCatalog(object):
 
     __repr__ = __str__
 
+    def follow_refs(self, *names):
+        catalog = self
+        for n in names:
+            catalog = catalog.catalog_refs[n].follow()
+        return catalog
+
+
+    def iso_md_url(self, ds):
+        try:
+            return ds.access_urls['ISO'] + \
+                '?catalog=' + \
+                urllib.parse.quote_plus(self.catalog_url) + \
+                '&dataset=' + \
+                urllib.parse.quote_plus(ds.id)
+        except Exception as e:
+            print("bad iso_md_url", self.catalog_url, ds.id)
+            print(e)
+            return ""
+
 
 class CatalogRef(object):
     """
@@ -381,6 +400,8 @@ class Dataset(object):
             self.url_path = None
 
         self.catalog_name = ''
+
+
         self.access_element_info = {}
         self._resolved = False
         self._resolverUrl = None
@@ -394,9 +415,29 @@ class Dataset(object):
                 log.warning('Must pass along the catalog URL to resolve '
                             'the latest.xml dataset!')
 
+        self.resolve_time_coverage(element_node)
+
+
     def __str__(self):
         """Return a string representation of the dataset."""
         return str(self.name)
+
+    def resolve_time_coverage(self, element):
+        self.time_coverage = {'start': None, 'end': None, 'duration': None}
+
+        # # first try <date> element
+        date = element.findtext('{http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0}date')
+        if(date != None):
+            self.time_coverage['start'] = self.time_coverage['end'] = date
+        
+        # then let <timeCoverage> take precedence
+        tc_element = element.find('.//{http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0}timeCoverage')
+
+        if(tc_element != None):
+            for field in ['start', 'end', 'duration']:
+                self.time_coverage[field] = tc_element.findtext('{http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0}' + field)
+
+
 
     def resolve_url(self, catalog_url):
         """Resolve the url of the dataset when reading latest.xml.
