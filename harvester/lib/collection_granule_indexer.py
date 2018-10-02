@@ -62,8 +62,11 @@ class CollectionGranuleIndexer():
     def index_dataset(self, catalog, ds):
         # print("index ds %s" % ds.id)
         # print(ds.time_coverage)
+        iso_url = catalog.iso_md_url(ds)
+        access_url = ds.access_urls.get('HTTPServer') or ds.access_urls.get('OPENDAP')
+
         start, end = self.time_coverage_to_time_span(**ds.time_coverage)
-        result = (start, end, ds.id, catalog.iso_md_url(ds))
+        result = {'name': ds.id, 'iso_url': iso_url, 'access_url': access_url, 'time_start': start, 'time_end': end}
         self.indexes.append(result)
 
     def scrape_catalog(self, catalog):
