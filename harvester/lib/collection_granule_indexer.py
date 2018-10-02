@@ -2,7 +2,7 @@ import re
 
 from .siphon.catalog import TDSCatalog, Dataset
 
-from .timestamp_util import timestamp_re
+from .timestamp_util import timestamp_re, timestamp_parser
 from .collection_generator import CollectionGenerator
 from . import siphon_ext
 
@@ -21,39 +21,25 @@ class CollectionGranuleIndexer():
         self.collection_generator = CollectionGenerator(output_dir='../records/collections')
         self.indexes = []
 
-        self.duration_re = re.compile(r'((?P<hours>\d+?)\shours?)?((?P<minutes>\d+?)\sminutes?)?((?P<seconds>\d+?)\sseconds?)?')
-
-    def parse_duration(self, duration_str):
-        parts = self.duration_re.match(duration_str)
-        if not parts:
-            return
-
-        parts = parts.groupdict()
-        time_params = {}
-        for (name, param) in parts.items():
-            if param:
-                time_params[name] = int(param)
-        
-        return timedelta(**time_params)
-
 
     # FROM: {'start': '2018-09-11T06:00:00Z', 'end': None, 'duration': 5 minutes}
     # TO: (2018-09-11T06:00:00Z, 2018-09-11T06:05:00Z)
     def time_coverage_to_time_span(self, start, end, duration):
-        strpformat = '%Y-%m-%dT%H:%M:%S'
-        
+        # strip out 'Z' at the end
+        start = start[0:19] if start
+        end = end[0:19] if end
+
         if start != None:
-            start = datetime.strptime(start[0:19], strpformat) 
+            start = timestamp_parser.parse_datetime(start)
         else:
             start = datetime.now()
 
         if duration != None:
-            end = start + self.parse_duration(duration)
+            end = start + timestamp_parser.parse_duration(duration)
         elif end != None:
-            end = datetime.strptime(end[0:19], strpformat)
+            end = timestamp_parser.parse_datetime(end)
         else:
             end = start
-
 
         result = (start, end)
         return result

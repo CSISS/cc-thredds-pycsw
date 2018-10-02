@@ -47,5 +47,7 @@ db.index_collection_granules('col_name1', 'col_url1', granules)
 # granule 1
 print(db.get_collection_granules('col_url1', s1, s2))
 
+
+
 # granules 1 & 2
 print(db.get_collection_granules('col_url1', s1, e2))

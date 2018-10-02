@@ -53,6 +53,7 @@ class IndexDB():
 
 
     def create_granule(self, collection_id, **kwargs):
+        kwargs['collection_id'] = collection_id
         with self.sql_engine.begin() as conn:
             result = conn.execute(self.granules.insert(kwargs))
 
@@ -68,7 +69,7 @@ class IndexDB():
         gs = self.granules
         select = sql.select([gs]).where(sql.and_(gs.c.time_start >= time_start, gs.c.time_end <= time_end))
         with self.sql_engine.begin() as conn:
-            rows = conn.execute(select).fetchall()
-            return rows 
+            results = conn.execute(select)
+            return [dict(r) for r in results] 
 
 

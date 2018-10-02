@@ -19,6 +19,31 @@ class timestamp_re:
         return re.search(timestamp_re.date_time, str)
 
 
+class timestamp_parser:
+    strpformat = '%Y-%m-%dT%H:%M:%S'
+    duration_re = re.compile(r'((?P<hours>\d+?)\shours?)?((?P<minutes>\d+?)\sminutes?)?((?P<seconds>\d+?)\sseconds?)?')
+
+    def parse_datetime(string):
+        return datetime.datetime.strptime(string, timestamp_parser.strpformat) 
+
+
+    def parse_duration(string):
+        parts = timestamp_parser.duration_re.match(string)
+
+        if not parts:
+            return
+
+        parts = parts.groupdict()
+        time_params = {}
+        for (name, param) in parts.items():
+            if param:
+                time_params[name] = int(param)
+        
+        return datetime.timedelta(**time_params)
+
+    def to_str(datetime):
+        return datetime.strftime("%Y-%m-%dT%H:%M:%S")
+
 
 class timestamp_range_generator():
     def __init__(self):

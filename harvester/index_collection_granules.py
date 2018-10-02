@@ -7,7 +7,6 @@ from lib.collection_granule_indexer import CollectionGranuleIndexer
 from lib.siphon.catalog import TDSCatalog, Dataset
 
 from lib.indexdb import IndexDB
-
 from lib.config import config
 
 
