@@ -6,7 +6,7 @@ from lxml import etree as ETree
 
 
 from .xml_editor import XMLEditor
-from .timestamp_util import timestamp_re
+from .timestamp_util import timestamp_re, timestamp_range_generator
 
 
 class CollectionGenerator():
@@ -56,6 +56,27 @@ class CollectionGenerator():
             e = dataset_xml.get_xpath_element(src_xpath)
             collection_xml.append_element_to_xpath(dest_xpath, e)
 
+
+    def set_collection_temporal_extent(self, collection, xml_doc):
+        # TODO: extract timestamp from collection siphon object
+        # HACK: assume 14 days duration
+        ts_range = timestamp_range_generator(14)
+        
+        # xml_str = """<gml:description>seconds</gml:description>
+        #         <gml:beginPosition>%s</gml:beginPosition>
+        #         <gml:endPosition>%s</gml:endPosition>""" % (ts_range.start_timestamp,  ts_range.end_timestamp)
+
+        xml_doc.update_xpath_text('/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:beginPosition', ts_range.start_timestamp)
+        xml_doc.update_xpath_text('/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition', ts_range.end_timestamp)
+
+                  # <gmd:EX_TemporalExtent id="boundingTemporalExtent">
+                  #    <gmd:extent>
+                  #       <gml:TimePeriod gml:id="d3009">
+                  #          <gml:description>seconds</gml:description>
+                  #          <gml:beginPosition>2018-09-25T03:00:00Z</gml:beginPosition>
+                  #          <gml:endPosition>2018-09-28T12:00:00Z</gml:endPosition>
+                  #       </gml:TimePeriod>
+
     def generate_collection_iso_for_dataset(self, collection_catalog, dataset, url, ds_file):
 
         dataset_xml_doc = XMLEditor.fromfile(ds_file)
@@ -66,6 +87,8 @@ class CollectionGenerator():
         collection_xml_doc = XMLEditor.fromstring(collection_xml_text)
 
         self.copy_elements_to_collection_xml(collection_xml_doc, dataset_xml_doc)
+
+        self.set_collection_temporal_extent(collection_catalog, collection_xml_doc)
 
         collection_file = self.output_dir + '/' + template_keywords['title'] + '.xml'
 

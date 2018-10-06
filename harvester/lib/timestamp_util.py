@@ -24,6 +24,8 @@ class timestamp_parser:
     duration_re = re.compile(r'((?P<hours>\d+?)\shours?)?((?P<minutes>\d+?)\sminutes?)?((?P<seconds>\d+?)\sseconds?)?')
 
     def parse_datetime(string):
+        string = string[0:19] # drop timezone info
+
         return datetime.datetime.strptime(string, timestamp_parser.strpformat) 
 
 
@@ -46,16 +48,16 @@ class timestamp_parser:
 
 
 class timestamp_range_generator():
-    def __init__(self):
+    def __init__(self, days=18):
         # create datetime range FROM 18-days-ago at 00:00:00 TO today at 23:59:59
-        self.begin = datetime.datetime.today() - datetime.timedelta(days=18)
-        self.begin = self.begin.replace(hour=0, minute=0, second=0, microsecond=0)
+        self.start = datetime.datetime.today() - datetime.timedelta(days=days)
+        self.start = self.start.replace(hour=0, minute=0, second=0, microsecond=0)
 
         self.end = datetime.datetime.today()
         self.end = self.end.replace(hour=23, minute=59, second=59, microsecond=999999)
 
 
-        self.begin_timestamp = self.begin.strftime("%Y-%m-%dT%H:%M:%SZ")
+        self.start_timestamp = self.start.strftime("%Y-%m-%dT%H:%M:%SZ")
         self.end_timestamp = self.end.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         self.date_stamp = self.end.strftime("%Y-%m-%d")

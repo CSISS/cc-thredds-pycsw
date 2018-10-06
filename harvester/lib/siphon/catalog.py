@@ -415,27 +415,29 @@ class Dataset(object):
                 log.warning('Must pass along the catalog URL to resolve '
                             'the latest.xml dataset!')
 
-        self.resolve_time_coverage(element_node)
+        self.time_coverage = Dataset.resolve_time_coverage(element_node)
 
 
     def __str__(self):
         """Return a string representation of the dataset."""
         return str(self.name)
 
-    def resolve_time_coverage(self, element):
-        self.time_coverage = {'start': None, 'end': None, 'duration': None}
+    def resolve_time_coverage(element):
+        time_coverage = {'start': None, 'end': None, 'duration': None}
 
         # # first try <date> element
         date = element.findtext('{http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0}date')
         if(date != None):
-            self.time_coverage['start'] = self.time_coverage['end'] = date
+            time_coverage['start'] = time_coverage['end'] = date
         
         # then let <timeCoverage> take precedence
         tc_element = element.find('.//{http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0}timeCoverage')
 
         if(tc_element != None):
             for field in ['start', 'end', 'duration']:
-                self.time_coverage[field] = tc_element.findtext('{http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0}' + field)
+                time_coverage[field] = tc_element.findtext('{http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0}' + field)
+
+        return time_coverage
 
 
 

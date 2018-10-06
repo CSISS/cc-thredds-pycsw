@@ -46,5 +46,9 @@ class XMLEditor():
 
         self.safe_xpath_element(xpath).append(element)
 
+    def update_xpath_text(self, xpath, text):
+        self.safe_xpath_element(xpath).text = text
+
+
 
 

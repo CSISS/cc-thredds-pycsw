@@ -25,10 +25,6 @@ class CollectionGranuleIndexer():
     # FROM: {'start': '2018-09-11T06:00:00Z', 'end': None, 'duration': 5 minutes}
     # TO: (2018-09-11T06:00:00Z, 2018-09-11T06:05:00Z)
     def time_coverage_to_time_span(self, start, end, duration):
-        # strip out 'Z' at the end
-        start = start[0:19] if start
-        end = end[0:19] if end
-
         if start != None:
             start = timestamp_parser.parse_datetime(start)
         else:

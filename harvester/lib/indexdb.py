@@ -47,6 +47,12 @@ class IndexDB():
             row = conn.execute(select).fetchone()
             return row and row[0]
 
+    def find_granule(self, name):
+        select = sql.select([self.granules.c.id]).where(self.granules.c.name == name)
+        with self.sql_engine.begin() as conn:
+            row = conn.execute(select).fetchone()
+            return row and row[0]
+
     def find_or_create_collection(self, name, url):
         cid = self.find_collection(url)
         return cid if cid else self.create_collection(name=name, url=url)
@@ -62,12 +68,19 @@ class IndexDB():
         cid = self.find_or_create_collection(collection_name, collection_url)
 
         for granule in granule_dicts:
-            self.create_granule(cid, **granule)
+            g = self.find_granule(granule['name'])
+            if g == None:
+                self.create_granule(cid, **granule)
+
 
 
     def get_collection_granules(self, collection_url, time_start, time_end):
+        cid = self.find_collection(collection_url)
+        if cid == None:
+            return([])
+
         gs = self.granules
-        select = sql.select([gs]).where(sql.and_(gs.c.time_start >= time_start, gs.c.time_end <= time_end))
+        select = sql.select([gs]).where(sql.and_(gs.c.time_start >= time_start, gs.c.time_end <= time_end, gs.c.collection_id == cid))
         with self.sql_engine.begin() as conn:
             results = conn.execute(select)
             return [dict(r) for r in results] 

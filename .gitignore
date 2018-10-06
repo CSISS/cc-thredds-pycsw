@@ -2,3 +2,4 @@ records
 example-data
 *.pyc
 .idea
+*.log

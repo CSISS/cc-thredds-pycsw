@@ -18,7 +18,7 @@ _, collection_catalog_url, collection_name = sys.argv
 
 indexer = CollectionGranuleIndexer()
 
-harvester = ThreadedHarvester(indexer, 1, 10)
+harvester = ThreadedHarvester(indexer, 14, 10)
 
 catalog = TDSCatalog(collection_catalog_url)
 
@@ -30,5 +30,5 @@ results = indexer.indexes
 
 db = IndexDB(config['index_db_url'])
 
-db.index_granules(collection_name, collection_catalog_url, results)
+db.index_collection_granules(collection_name, collection_catalog_url, results)
 
