@@ -26,6 +26,7 @@ harvester.harvest(catalog.catalog_refs.values())
 
 results = indexer.indexes
 
+print("discovered %d granules" % len(results))
 
 
 db = IndexDB(config['index_db_url'])
