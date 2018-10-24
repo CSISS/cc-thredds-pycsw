@@ -11,7 +11,7 @@ from lib.indexdb import IndexDB
 from lib.config import config
 
 
-db = IndexDB(config['index_db_url'])
+db = IndexDB(config['index_db_url'], True)
 
 db.drop_sql_tables()
 db.create_sql_tables()

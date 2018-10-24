@@ -23,9 +23,9 @@ refs['satellite infrared'] = top_cat.catalog_refs['Satellite Data'].follow().cat
 refs['nexrad2-tjua'] = top_cat.catalog_refs['Radar Data'].follow() \
             .catalog_refs['NEXRAD Level II Radar WSR-88D']
 
-refs['nexrad3-pta-yux'] = top_cat.catalog_refs['Radar Data'].follow() \
-            .catalog_refs['NEXRAD Level III Radar'].follow()\
-            .catalog_refs['PTA']
+# refs['nexrad3-pta-yux'] = top_cat.catalog_refs['Radar Data'].follow() \
+#             .catalog_refs['NEXRAD Level III Radar'].follow()\
+#             .catalog_refs['PTA']
 
 
 # harvester.harvest(top_cat.catalog_refs.values())

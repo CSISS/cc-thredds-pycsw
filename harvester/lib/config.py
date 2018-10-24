@@ -1,1 +1,1 @@
-config = {'index_db_url': 'postgresql://postgres:mypass@localhost:8432/thredds_granule_index'}
+config = {'index_db_url': 'sqlite:///test_pycsw_unidata.db'}

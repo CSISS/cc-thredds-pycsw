@@ -1,21 +1,23 @@
 # import records
 import sqlalchemy as sql
-
+from datetime import datetime
 
 class IndexDB():
-    def __init__(self, db_url):
+    def __init__(self, db_url, echo=False):
         self.db_url = db_url
-        self.sql_engine = sql.create_engine(db_url, echo=False)
+        self.sql_engine = sql.create_engine(db_url, echo=echo)
         self.sql_metadata = sql.MetaData(self.sql_engine)
 
         self.define_sql_schema()
+        self.create_sql_tables()
 
 
     def define_sql_schema(self):
         self.collections = sql.Table('collections', self.sql_metadata,
             sql.Column('id', sql.Integer, primary_key=True),
             sql.Column('name', sql.String),
-            sql.Column('url', sql.String)
+            sql.Column('url', sql.String),
+            sql.Column('updated_at', sql.DateTime)
         )
 
         self.granules = sql.Table('granules', self.sql_metadata,
@@ -57,6 +59,19 @@ class IndexDB():
         cid = self.find_collection(url)
         return cid if cid else self.create_collection(name=name, url=url)
 
+    def touch_collection(self, cid):
+        print("------------")
+        update = self.collections.update().values(updated_at=datetime.now()).where(self.collections.c.id == cid)
+        with self.sql_engine.begin() as conn:
+            conn.execute(update)
+
+    def get_collection_updated_at(self, url):
+        select = sql.select([self.collections.c.updated_at]).where(self.collections.c.url == url)
+        with self.sql_engine.begin() as conn:
+            row = conn.execute(select).fetchone()
+            return row and row[0]
+
+
 
     def create_granule(self, collection_id, **kwargs):
         kwargs['collection_id'] = collection_id
@@ -72,6 +87,7 @@ class IndexDB():
             if g == None:
                 self.create_granule(cid, **granule)
 
+        self.touch_collection(cid)
 
 
     def get_collection_granules(self, collection_url, time_start, time_end):

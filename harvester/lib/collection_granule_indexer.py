@@ -3,7 +3,6 @@ import re
 from .siphon.catalog import TDSCatalog, Dataset
 
 from .timestamp_util import timestamp_re, timestamp_parser
-from .collection_generator import CollectionGenerator
 from . import siphon_ext
 
 from .util import slugify, http_getfile
@@ -18,7 +17,6 @@ class CollectionGranuleIndexer():
     def __init__(self):
         self.queue = Queue(maxsize=0)
         self.download_dir = '../records/scraped'
-        self.collection_generator = CollectionGenerator(output_dir='../records/collections')
         self.indexes = []
 
 

@@ -3,6 +3,7 @@ import urllib.request
 import os
 
 def http_getfile(url, file):
+    # print("http_getfile %s" % url)
     # if(not os.path.isfile(file)):
     urllib.request.urlretrieve(url, file)
     print("downloaded %s" % file)

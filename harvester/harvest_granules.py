@@ -10,7 +10,7 @@ from lib.siphon.catalog import TDSCatalog, Dataset
 
 scraper = GranuleScraper()
 
-harvester = ThreadedHarvester(scraper, 40, 10)
+harvester = ThreadedHarvester(scraper, 4, 10)
 
 top_cat = TDSCatalog('http://thredds.ucar.edu/thredds/catalog.xml')
 

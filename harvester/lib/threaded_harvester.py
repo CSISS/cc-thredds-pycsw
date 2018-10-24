@@ -15,6 +15,7 @@ class ThreadedHarvester():
 
     def scrape_ref(self, ref):
         try:
+            # print("follow %s" % ref)
             catalog = ref.follow()
             self.scraper.scrape_catalog(catalog)
         except Exception as e:
@@ -25,7 +26,7 @@ class ThreadedHarvester():
 
     def worker_loop(self):
         thread_name = threading.current_thread().getName()
-        print("%s started" % thread_name)
+        # print("%s started" % thread_name)
 
         while True:
             try:
@@ -67,6 +68,7 @@ class ThreadedHarvester():
 
         # print("starting %d worker threads" % self.num_workers)
         self.threads = []
+        print("Starting %d threads" % self.num_workers)
         for _ in range(self.num_workers):
             t = threading.Thread(target=self.worker_loop)
             self.threads.append(t)

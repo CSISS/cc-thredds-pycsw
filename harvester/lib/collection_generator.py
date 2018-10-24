@@ -19,9 +19,22 @@ class CollectionGenerator():
 
 
     def generate_template_keywords(self, collection_catalog, dataset, url, xml_doc):
+        file_ext_re = r'_\.\w{1,5}$'
+        file_timestamp_re = timestamp_re.yesterday + r'/'
+
+        title = re.sub(timestamp_re.date_time, '', dataset.name)
+        title = re.sub(file_ext_re, '', title) # '_.grib2' -> ''
+        title = re.sub(file_timestamp_re, '', title) # '20181023/Level3_YUX_PTA_20181023_2358' -> 'Level3_YUX_PTA_20181023_2358'
+
+        
+        file_identifier = re.sub(timestamp_re.date_time, '', dataset.id)
+        file_identifier = re.sub(file_ext_re, '', file_identifier) # '_.grib2' -> ''
+        file_identifier = re.sub(file_timestamp_re, '', file_identifier) # '20181023/Level3_YUX_PTA_20181023_2358' -> 'Level3_YUX_PTA_20181023_2358'
+
+
         keywords = {}
-        keywords["title"] = re.sub(timestamp_re.date_time, 'collection', dataset.name)
-        keywords["file_identifier"] = re.sub(timestamp_re.date_time, 'collection', dataset.id)
+        keywords["title"] = title
+        keywords["file_identifier"] = file_identifier
         keywords["responsible_party"] = xml_doc.get_xpath_text('/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty/gmd:individualName/gco:CharacterString')
         keywords["contact_email"] = xml_doc.get_xpath_text('/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress/gco:CharacterString')
         keywords["date"] = xml_doc.get_xpath_text('/gmi:MI_Metadata/gmd:dateStamp/gco:Date')
@@ -78,7 +91,6 @@ class CollectionGenerator():
                   #       </gml:TimePeriod>
 
     def generate_collection_iso_for_dataset(self, collection_catalog, dataset, url, ds_file):
-
         dataset_xml_doc = XMLEditor.fromfile(ds_file)
 
         template_keywords = self.generate_template_keywords(collection_catalog, dataset, url, dataset_xml_doc)
