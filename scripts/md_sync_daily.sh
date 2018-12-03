@@ -10,5 +10,5 @@ python3 harvest_collections.py
 
 # import into pycsw
 cd /opt/cc-thredds-pycsw
-script/records-clear.sh
-script/records-import.sh
+scripts/records-clear.sh
+scripts/records-import.sh
