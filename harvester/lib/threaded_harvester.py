@@ -61,7 +61,7 @@ class ThreadedHarvester():
 
     def harvest(self, catalog_refs):
         # Ctrl+\
-        signal.signal(signal.SIGQUIT, self.dump_thread_stacks)
+        # signal.signal(signal.SIGQUIT, self.dump_thread_stacks)
 
         for ref in catalog_refs:
             self.scraper.queue.put(ref)

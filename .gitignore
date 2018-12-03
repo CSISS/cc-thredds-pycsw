@@ -1,4 +1,5 @@
 records
+test_pycsw_unidata.db
 example-data
 *.pyc
 .idea
