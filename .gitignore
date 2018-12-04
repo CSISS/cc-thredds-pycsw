@@ -4,3 +4,4 @@ example-data
 *.pyc
 .idea
 *.log
+__pycache__
