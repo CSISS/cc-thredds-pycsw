@@ -27,9 +27,11 @@ services:
       - "--workers"
       - "6"
 
-  thredds_harvester_indexer:
-    image: csiss/thredds_harvester_indexer
-    container_name: thredds_harvester_indexer
+  harvester-indexer:
+    image: csiss/thredds-harvester-indexer
+    container_name: thredds-harvester-indexer
+    ports:
+      - "8001:8000"
     volumes:
       - records:/records
 
