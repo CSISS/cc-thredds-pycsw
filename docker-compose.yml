@@ -4,8 +4,6 @@ services:
   db:
     image: mdillon/postgis:9.6-alpine
     container_name: db
-    ports:
-      - "8432:5432"
     environment:
       POSTGRES_PASSWORD: mypass
       POSTGRES_DB: pycsw
@@ -14,26 +12,28 @@ services:
       - dbdata:/var/lib/postgresql/data/pgdata
 
   pycsw:
-    image: csiss/pycsw-py2
+    image: csiss/pycsw
     container_name: pycsw
     ports:
-      - "8095:8000"
+      - "8001:8000"
     volumes:
       - ./pycsw.cfg:/etc/pycsw/pycsw.cfg
-      - records:/records
+      - ../records:/records
     entrypoint:
-      - "python"
+      - "python3"
       - "/usr/local/bin/entrypoint.py"
       - "--workers"
       - "6"
 
+      
   harvester-indexer:
     image: csiss/thredds-harvester-indexer
     container_name: thredds-harvester-indexer
     ports:
-      - "8001:8000"
+      - "8002:8000"
     volumes:
-      - records:/records
+      - ./pycsw.cfg:/etc/pycsw/pycsw.cfg
+      - ../records:/records
 
 
 volumes:
