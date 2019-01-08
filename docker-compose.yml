@@ -18,7 +18,7 @@ services:
       - "8001:8000"
     volumes:
       - ./pycsw.cfg:/etc/pycsw/pycsw.cfg
-      - ../records:/records
+      - records:/records
     entrypoint:
       - "python3"
       - "/usr/local/bin/entrypoint.py"
@@ -33,7 +33,7 @@ services:
       - "8002:8000"
     volumes:
       - ./pycsw.cfg:/etc/pycsw/pycsw.cfg
-      - ../records:/records
+      - records:/records
 
 
 volumes:

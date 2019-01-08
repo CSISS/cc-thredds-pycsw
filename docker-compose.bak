@@ -1,0 +1,16 @@
+
+  pycsw-manager:
+    image: csiss/pycsw-py2-manager
+    container_name: pycsw-manager
+    ports:
+      - "8096:8000"
+
+
+      
+  harvester-indexer:
+    image: csiss/thredds-harvester-indexer
+    container_name: thredds-harvester-indexer
+    ports:
+      - "8001:8000"
+    volumes:
+      - records:/records
