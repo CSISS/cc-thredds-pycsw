@@ -40,7 +40,7 @@ services:
     container_name: cyberconnector
     ports:
       - "8003:8080"
-    command: "--edu.cyberconnector.csw_url=http://pycsw:8000"
+    command: "--edu.cyberconnector.csw_url=http://pycsw:8000 --server.servlet.context-path=/CyberConnector"
 
 
 
