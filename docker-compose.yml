@@ -35,13 +35,6 @@ services:
       - ./pycsw.cfg:/etc/pycsw/pycsw.cfg
       - records:/records
 
-  cyberconnector:
-    image: csiss/cyberconnector
-    container_name: cyberconnector
-    ports:
-      - "8003:8080"
-    command: "--edu.cyberconnector.csw_url=http://pycsw:8000 --server.servlet.context-path=/CyberConnector"
-
 
 
 
