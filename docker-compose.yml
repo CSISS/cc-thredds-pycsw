@@ -26,9 +26,9 @@ services:
       - "6"
 
       
-  harvester-indexer:
-    image: csiss/thredds-harvester-indexer
-    container_name: thredds-harvester-indexer
+  thredds-crawler:
+    image: csiss/thredds-crawler
+    container_name: thredds-crawler
     ports:
       - "8002:8000"
     volumes:
