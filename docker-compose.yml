@@ -34,6 +34,8 @@ services:
     volumes:
       - ./pycsw.cfg:/etc/pycsw/pycsw.cfg
       - records:/records
+    environment:
+      - INDEX_DB_URL=postgres://postgres:mypass@db:5432/pycsw
 
 
 
